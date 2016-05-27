@@ -26,7 +26,7 @@ var statuses = {
 }
 
 var activeStatuses = [
-	3, 10005
+	3, 10004, 10005, 10026
 ];
 
 function Calendar() {
