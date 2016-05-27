@@ -116,10 +116,10 @@ Issue.prototype.getActiveDays = function () {
 			lastStart = transition.date;
 		} else if (fromActive && !toActive) {
 			var day = moment(lastStart);
-			do {
+			while (day.isSameOrBefore(transition.date)) {
 				days.push(day);
 				day.add(1, 'd');
-			} while (day.isBefore(transition.date));
+			}
 			lastStart = null;
 		}
 	}, this);
