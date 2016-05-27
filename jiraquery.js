@@ -220,6 +220,8 @@ JiraQuery.prototype.getCalendar = function() {
 	}, new Calendar());
 }
 
+/* Usage:
+
 var query = new JiraQuery();
 query.addTickets(['IOS-6850', 'IOS-6513', 'IOS-6810', 'IOS-6877']).then(function() {
 	var calendar = query.getCalendar();
@@ -229,3 +231,5 @@ query.addTickets(['IOS-6850', 'IOS-6513', 'IOS-6810', 'IOS-6877']).then(function
 }).catch(function(ex) {
 	console.log('Failure: ' + ex);
 });
+
+*/
