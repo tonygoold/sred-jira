@@ -195,7 +195,7 @@ JiraQuery.prototype.addTicket = function(ticketNumber) {
 				project.addIssue(issue);
 				resolve(issue);
 			} catch (ex) {
-				console.log("Caught an exception: " + ex);
+				console.log("Caught an exception: " + ex.stack);
 				reject(ex);
 			}
 		});
@@ -234,3 +234,4 @@ query.addTickets(['IOS-6850', 'IOS-6513', 'IOS-6810', 'IOS-6877']).then(function
 });
 
 */
+module.exports = JiraQuery;

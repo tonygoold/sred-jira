@@ -6,6 +6,13 @@
       font-size: 16px;
       margin-bottom: 1em;
     }
+    input#calculate {
+      float: right;
+    }
+    table {
+      width: 100%;
+      text-align: center;
+    }
   </style>
   <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 </head>
@@ -18,8 +25,13 @@
 <h1> {{ this }} </h1>
 {{/each}}
 
+<form action="/calculate" method="post">
+
 <table>
   <tr>
+    <th>
+      Selected?
+    </th>
     <th>
       Ticket
     </th>
@@ -29,25 +41,33 @@
     <th>
       Description
     </th>
-    <th>
-      Time
-    </th>
   </tr>
 {{#each issues}}
   <tr>
+    <td>
+      <input type="checkbox" {{#if checked}}checked="checked"{{/if}} name="{{key}}" />
+    </td>
     <td>
       <a href="https://wattpad.atlassian.net/browse/{{ key }}">{{ key }}</a>
     </td>
     <td>
       {{ fields.status.name }}
     </td>
-    <td>
+    <td style="text-align: left;">
       {{ fields.summary }}
-    </td>
-    <td>
-      hi
     </td>
   </tr>
 {{/each}}
 </table>
+<input id="calculate" type="submit" value="Calculate Hours" />
+<input type="hidden" name="query" value="{{query}}" />
+</form>
+{{#if people}}
+<h1> Hours worked </h1>
+{{#each people}}
+<div class="person">
+  {{ name }}: {{ hours }} hours
+</div>
+{{/each}}
+{{/if}}
 </body>
