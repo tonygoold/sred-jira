@@ -1,0 +1,53 @@
+<!doctype html>
+<head>
+  <style>
+    input#query {
+      width: 100%;
+      font-size: 16px;
+      margin-bottom: 1em;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<form action='/'>
+  <input name="query" id="query" type="text" value="{{ query }}" placeholder="Input JQL" />
+</form>
+{{#each errors}}
+<h1> {{ this }} </h1>
+{{/each}}
+
+<table>
+  <tr>
+    <th>
+      Ticket
+    </th>
+    <th>
+      Status
+    </th>
+    <th>
+      Description
+    </th>
+    <th>
+      Time
+    </th>
+  </tr>
+{{#each issues}}
+  <tr>
+    <td>
+      <a href="https://wattpad.atlassian.net/browse/{{ key }}">{{ key }}</a>
+    </td>
+    <td>
+      {{ fields.status.name }}
+    </td>
+    <td>
+      {{ fields.summary }}
+    </td>
+    <td>
+      hi
+    </td>
+  </tr>
+{{/each}}
+</table>
+</body>
