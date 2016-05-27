@@ -26,7 +26,7 @@ var statuses = {
 }
 
 var activeStatuses = [
-	3, 10005
+	3, 10004, 10005, 10026
 ];
 
 function Calendar() {
@@ -118,6 +118,7 @@ Issue.prototype.getActiveDays = function () {
 			var day = moment(lastStart);
 			while (day.isSameOrBefore(transition.date)) {
 				days.push(day);
+				day = moment(day);
 				day.add(1, 'd');
 			}
 			lastStart = null;
