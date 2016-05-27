@@ -118,6 +118,7 @@ Issue.prototype.getActiveDays = function () {
 			var day = moment(lastStart);
 			while (day.isSameOrBefore(transition.date)) {
 				days.push(day);
+				day = moment(day);
 				day.add(1, 'd');
 			}
 			lastStart = null;
