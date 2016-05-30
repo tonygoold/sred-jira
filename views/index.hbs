@@ -13,6 +13,11 @@
       width: 100%;
       text-align: center;
     }
+    .pagination span, .pagination a {
+      display: inline-block;
+      padding: 5px;
+      border: 1px solid black;
+    }
   </style>
   <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 </head>
@@ -59,9 +64,16 @@
   </tr>
 {{/each}}
 </table>
+
 <input id="calculate" type="submit" value="Calculate Hours" />
 <input type="hidden" name="query" value="{{query}}" />
+<input type="hidden" name="start" value="{{start}}" />
 </form>
+
+<div class="pagination">
+  {{{ pagination start total 50 query }}}
+</div>
+
 {{#if people}}
 <h1> Hours worked </h1>
 {{#each people}}

@@ -3,6 +3,7 @@
 var JiraApi = require('jira').JiraApi;
 var util = require('util');
 var moment = require('moment');
+var _ = require('lodash');
 
 try {
   var config = require('../sred-jira-config.json');
@@ -102,7 +103,7 @@ function Transition(user, fromStatus, toStatus, date) {
 function Issue(issueJson) {
 	this.ticket = issueJson.key;
 	this.project = issueJson.fields.project.key;
-	this.assignee = issueJson.fields.assignee.name;
+	this.assignee = _.result(issueJson, 'fields.assignee.name');
 	var transitions = [];
 	issueJson.changelog.histories.forEach(function(history) {
 		var user = history.author.name;

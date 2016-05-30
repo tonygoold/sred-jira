@@ -31,9 +31,23 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+hbs.registerHelper('pagination', function(current, total, perPage, query, options) {
+  var pages = '';
+  for (var i = 0; i < total; i += perPage) {
+    if (i == current) {
+      pages += '<span>' + ( _.floor(i / perPage) + 1) + '</span>';
+    } else {
+      pages += '<a href="/?query=' + encodeURIComponent(query) + '&start=' + encodeURIComponent(i) + '">' +
+        (_.floor(i / perPage) + 1) + '</a>';
+    }
+  }
+  return new hbs.SafeString(pages);
+});
+
 app.get('/', function(req, res) {
   var query = req.query.query || 'project = web';
-  jira.searchJira(query, { fields: ['*all'], expand:['changelog'] }, function(error, body) {
+  var start = req.query.start || 0;
+  jira.searchJira(query, { fields: ['*all'], expand:['changelog'], start: start }, function(error, body) {
     if (error) {
       res.render('index', {
         errors: error.errorMessages,
@@ -41,6 +55,8 @@ app.get('/', function(req, res) {
       });
     } else {
       res.render('index', {
+        start: start,
+        total: body.total,
         query: query,
         issues: _.map(body.issues, function(issue) {
           issue.checked = true;
@@ -53,10 +69,11 @@ app.get('/', function(req, res) {
 
 app.post('/calculate', function(req, res) {
   var query = new JiraQuery();
-  var tickets = _.keys(_.omit(req.body, 'query'));
+  var tickets = _.keys(_.omit(req.body, ['query', 'start']));
   var queryPromise = query.addTickets(tickets);
+  var start = req.query.start || 0;
   queryPromise.then(function() {
-    jira.searchJira(req.body.query, { fields: ['*all'], expand:['changelog'] }, function(error, body) {
+    jira.searchJira(req.body.query, { fields: ['*all'], expand:['changelog'], start: start }, function(error, body) {
       if (error) {
         res.render('index', {
           errors: error.errorMessages,
@@ -66,6 +83,8 @@ app.post('/calculate', function(req, res) {
         var calendar = query.getCalendar();
         var people = calendar.getPeople();
         var data = {
+          start: start,
+          total: body.total,
           query: req.body.query,
           issues: _.map(body.issues, function(issue) {
             if (_.indexOf(tickets, issue.key) != -1) {
@@ -73,15 +92,14 @@ app.post('/calculate', function(req, res) {
             }
             return issue;
           }),
-          people: []
+          people: _.reduce(people, function(acc, person) {
+                    acc.push({
+                      name: person,
+                      hours: calendar.getWorkingHours(person)
+                    });
+                    return acc;
+                  }, [])
         };
-        _.reduce(people, function(acc, person) {
-          acc.push({
-            name: person,
-            hours: calendar.getWorkingHours(person)
-          });
-          return acc;
-        }, data.people);
 
         res.render('index', data);
       }
