@@ -3,7 +3,17 @@
 var JiraApi = require('jira').JiraApi;
 var util = require('util');
 var moment = require('moment');
-var config = require('../sred-jira-config.json');
+
+try {
+  var config = require('../sred-jira-config.json');
+} catch(e) {
+  var config = {
+    host: process.env.JIRA_HOST,
+    port: process.env.JIRA_PORT,
+    user: process.env.JIRA_USER,
+    password: process.env.JIRA_PASS
+  };
+}
 
 var jira = new JiraApi('https', config.host, config.port, config.user, config.password, '2');
 
