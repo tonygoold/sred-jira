@@ -4,11 +4,21 @@ var express = require('express');
 var hbs = require('express-hbs');
 var util = require('util');
 var JiraApi = require('jira').JiraApi;
-var config = require('../sred-jira-config.json');
 var bodyParser = require('body-parser');
 var _ = require('lodash');
 
 var JiraQuery = require('./jiraquery');
+
+try {
+  var config = require('../sred-jira-config.json');
+} catch(e) {
+  var config = {
+    host: process.env.JIRA_HOST,
+    port: process.env.JIRA_PORT,
+    user: process.env.JIRA_USER,
+    password: process.env.JIRA_PASS
+  };
+}
 
 var jira = new JiraApi('https', config.host, config.port, config.user, config.password, '2');
 var app = express();
