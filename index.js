@@ -23,9 +23,7 @@ try {
 var jira = new JiraApi('https', config.host, config.port, config.user, config.password, '2');
 var app = express();
 
-app.engine('hbs', hbs.express4({
-    partialsDir: __dirname + '/views/partials'
-}));
+app.engine('hbs', hbs.express4());
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 app.use(bodyParser.json());
