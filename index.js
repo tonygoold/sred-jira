@@ -47,7 +47,7 @@ hbs.registerHelper('pagination', function(current, total, perPage, query, option
 app.get('/', function(req, res) {
   var query = req.query.query || 'project = web';
   var start = req.query.start || 0;
-  jira.searchJira(query, { fields: ['*all'], expand:['changelog'], start: start }, function(error, body) {
+  jira.searchJira(query, { fields: ['*all'], expand:['changelog'], startAt: start }, function(error, body) {
     if (error) {
       res.render('index', {
         errors: error.errorMessages,
@@ -73,7 +73,7 @@ app.post('/calculate', function(req, res) {
   var queryPromise = query.addTickets(tickets);
   var start = req.query.start || 0;
   queryPromise.then(function() {
-    jira.searchJira(req.body.query, { fields: ['*all'], expand:['changelog'], start: start }, function(error, body) {
+    jira.searchJira(req.body.query, { fields: ['*all'], expand:['changelog'], startAt: start }, function(error, body) {
       if (error) {
         res.render('index', {
           errors: error.errorMessages,
