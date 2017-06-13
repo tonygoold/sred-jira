@@ -176,6 +176,7 @@ Project.prototype.getCalendar = function() {
 
 function JiraQuery() {
   this.projects = {};
+  this.errors = [];
 };
 
 JiraQuery.prototype.getProject = function( name ) {
@@ -206,6 +207,13 @@ JiraQuery.prototype.addTicket = function( ticketNumber ) {
       try {
         var issue = new Issue( issueJson );
         var project = self.getProject( issue.project );
+
+        if ( !issue.assignee ) {
+          self.errors.push( {
+            key: issue.ticket,
+            message: "has no assignee"
+          } );
+        }
         project.addIssue( issue );
         resolve( issue );
       }

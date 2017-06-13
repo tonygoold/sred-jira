@@ -110,7 +110,8 @@ app.post( '/calculate', function( req, res ) {
               hours: calendar.getWorkingHours( person )
             } );
             return acc;
-          }, [] )
+          }, [] ),
+          errors: query.errors
         };
 
         res.render( 'index', data );
