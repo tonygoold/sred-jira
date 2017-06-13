@@ -82,4 +82,13 @@
 </div>
 {{/each}}
 {{/if}}
+
+{{#if errors}}
+<h1>Errors that should be corrected</h1>
+{{#each errors}}
+<div class="error">
+  <a href="https://wattpad.atlassian.net/browse/{{ key }}">{{ key }}</a>: {{ message }}
+</div>
+{{/each}}
+{{/if}}
 </body>
