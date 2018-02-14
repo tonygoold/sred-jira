@@ -27,18 +27,20 @@ var issueTypes = {
 };
 
 var statuses = {
-  11431: 'Triage',
+  3: 'In Progress',
+  10004: 'Review',
+  10005: 'In Review',
+  10017: 'For Approval',
   10018: 'Backlog',
   10019: 'Selected for Development',
-  3: 'In Progress',
-  10005: 'In Review',
+  10026: 'Development',
   10331: 'Merged',
-  10017: 'For Approval'
-}
+  11431: 'Triage'
+};
 
-var activeStatuses = [
-  3, 10004, 10005, 10026
-];
+var activeStatuses = [ 3, 10004, 10005, 10026 ];
+var workingStatuses = [ 3, 10026 ];
+var reviewStatuses = [ 10004, 10005 ];
 
 function Calendar() {
   this.people = {};
@@ -100,32 +102,67 @@ function Transition(user, fromStatus, toStatus, date) {
   this.date = date;
 }
 
+Transition.prototype.isActivating = function() {
+  return activeStatuses.indexOf(this.fromStatus) < 0 &&
+       activeStatuses.indexOf(this.toStatus) >= 0;
+}
+
+Transition.prototype.isDeactivating = function() {
+  return activeStatuses.indexOf(this.fromStatus) >= 0 &&
+       activeStatuses.indexOf(this.toStatus) < 0;
+}
+
 function Issue(issueJson) {
   this.ticket = issueJson.key;
   this.project = issueJson.fields.project.key;
   this.assignee = _.result(issueJson, 'fields.assignee.name');
+  var assignees = [];
   var transitions = [];
+  var lastAssignee = null;
   issueJson.changelog.histories.forEach(function(history) {
     var user = history.author.name;
     var date = moment(history.created).startOf('day');
     history.items.forEach(function(item) {
-      if (item.fieldtype == 'jira' && item.field == 'status') {
-        transitions.push(new Transition(user, parseInt(item.from, 10), parseInt(item.to, 10), date));
+      if (item.fieldtype != 'jira') {
+        return;
+      }
+      if (item.field == 'status') {
+        var transition = new Transition(lastAssignee, parseInt(item.from, 10), parseInt(item.to, 10), date);
+        transitions.push(transition);
+        if (transition.isActivating() && lastAssignee && assignees.indexOf(lastAssignee) < 0) {
+          assignees.push(lastAssignee);
+        }
+      } else if (item.field == 'assignee' && item.to && item.to.length > 0) {
+        lastAssignee = item.to;
+        // Retroactively assign any unassigned transitions, noting
+        // whether any were activating transitions
+        var adjustedActivatingTransition = false;
+        transitions.forEach(function(transition) {
+          if (!transition.user) {
+            transition.user = lastAssignee;
+            if (transition.isActivating() >= 0) {
+              adjustedActivatingTransition = true;
+            }
+          }
+        });
+        // Record all assignees in working statuses
+        if (adjustedActivatingTransition && assignees.indexOf(lastAssignee) < 0) {
+          assignees.push(lastAssignee);
+        }
       }
     });
   });
   this.transitions = transitions;
+  this.assignees = assignees;
 }
 
-Issue.prototype.getActiveDays = function() {
+Issue.prototype.getActiveDays = function () {
   var lastStart = null;
   var days = [];
   this.transitions.forEach(function(transition) {
-    var fromActive = activeStatuses.indexOf(transition.fromStatus) >= 0;
-    var toActive = activeStatuses.indexOf(transition.toStatus) >= 0;
-    if (!fromActive && toActive) {
+    if (transition.isActivating()) {
       lastStart = transition.date;
-    } else if (fromActive && !toActive) {
+    } else if (transition.isDeactivating()) {
       var day = moment(lastStart);
       while (day.isSameOrBefore(transition.date)) {
         days.push(day);
@@ -162,6 +199,10 @@ Project.prototype.removeIssue = function(ticketNumber) {
     this.issues.splice(index, 1);
   }
 };
+
+Project.prototype.getIssues = function() {
+  return this.issues;
+}
 
 Project.prototype.getCalendar = function() {
   var calendar = new Calendar();
@@ -240,16 +281,25 @@ JiraQuery.prototype.getCalendar = function() {
   }, new Calendar());
 }
 
+JiraQuery.prototype.getIssues = function() {
+  return this.getProjects().reduce(function(previous, project) {
+    return previous.concat(project.getIssues());
+  }, []);
+};
+
 /* Usage:
 
 var query = new JiraQuery();
-query.addTickets(['IOS-6850', 'IOS-6513', 'IOS-6810', 'IOS-6877']).then(function() {
-	var calendar = query.getCalendar();
-	calendar.getPeople().forEach(function(person) {
-		console.log(person + ': ' + calendar.getWorkingHours(person) + ' hours');
-	});
+query.addTickets(['IOS-6850', 'IOS-6513', 'IOS-6810', 'IOS-6877', 'IOS-2970']).then(function() {
+  var calendar = query.getCalendar();
+  calendar.getPeople().forEach(function(person) {
+    console.log(person + ': ' + calendar.getWorkingHours(person) + ' hours');
+  });
+  query.getIssues().forEach(function(issue) {
+    console.log(issue.ticket + ': ' + issue.assignees.join(', '));
+  });
 }).catch(function(ex) {
-	console.log('Failure: ' + ex);
+  console.log('Failure: ' + ex);
 });
 
 */
